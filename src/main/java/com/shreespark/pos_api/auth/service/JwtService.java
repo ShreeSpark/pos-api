@@ -13,7 +13,6 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -36,11 +35,9 @@ public class JwtService {
     public String generateAdminAccessToken(Admin admin) {
         return Jwts.builder()
                 .subject(admin.getId().toString())
-                .claims(Map.of(
-                        "adminId", admin.getId().toString(),
-                        "role", "SUPER_ADMIN",
-                        "permissions", List.of()
-                ))
+                .claim("adminId", admin.getId().toString())
+                .claim("role", "SUPER_ADMIN")
+                .claim("permissions", List.of())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpiryMs))
                 .signWith(key)
@@ -50,12 +47,10 @@ public class JwtService {
     public String generateAccessToken(Staff staff, Set<Permission> effectivePermissions) {
         return Jwts.builder()
                 .subject(staff.getId().toString())
-                .claims(Map.of(
-                        "staffId", staff.getId().toString(),
-                        "tenantId", staff.getTenantId().toString(),
-                        "role", staff.getRole().name(),
-                        "permissions", effectivePermissions.stream().map(Enum::name).toList()
-                ))
+                .claim("staffId", staff.getId().toString())
+                .claim("tenantId", staff.getTenantId().toString())
+                .claim("role", staff.getRole().name())
+                .claim("permissions", effectivePermissions.stream().map(Enum::name).toList())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpiryMs))
                 .signWith(key)
