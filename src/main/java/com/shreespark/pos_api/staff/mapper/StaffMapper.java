@@ -14,10 +14,11 @@ public class StaffMapper {
                 staff.getId(),
                 staff.getTenantId(),
                 staff.getName(),
+                staff.getStaffCode(),
                 staff.getEmail(),
                 staff.getPhone(),
                 staff.getRole().name(),
-                staff.getPermissions().stream().map(Enum::name).collect(Collectors.toSet()),
+                staff.getPermissions() != null ? staff.getPermissions().stream().map(Enum::name).collect(Collectors.toSet()) : Set.of(),
                 staff.isActive(),
                 staff.getCreatedAt()
         );

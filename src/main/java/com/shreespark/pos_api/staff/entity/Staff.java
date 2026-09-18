@@ -20,6 +20,9 @@ public class Staff extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "staff_code")
+    private String staffCode;
+
     @Column(nullable = false, unique = true)
     private String email;
 

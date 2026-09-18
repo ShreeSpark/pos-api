@@ -32,13 +32,26 @@ public class StaffServiceImpl implements StaffService {
     public StaffResponse create(UUID tenantId, CreateStaffRequest request) {
         planLimitService.checkLimit(tenantId, PlanLimitService.LimitType.STAFF,
                 staffRepository.countByTenantIdAndActiveTrue(tenantId));
-        if (staffRepository.existsByEmailAndTenantId(request.email(), tenantId)) {
-            throw new RuntimeException("Staff with email already exists: " + request.email());
+
+        String code = request.staffCode();
+        if (code == null || code.isBlank()) {
+            long nextCount = staffRepository.countByTenantIdAndActiveTrue(tenantId) + 1001;
+            code = String.valueOf(nextCount); // Numeric digits only e.g. 1001, 1002, 1003
+        }
+
+        String email = request.email();
+        if (email == null || email.isBlank()) {
+            email = code.toLowerCase() + "@staff.pos";
+        }
+
+        if (staffRepository.existsByEmailAndTenantId(email, tenantId)) {
+            throw new RuntimeException("Staff with email or code already exists: " + email);
         }
 
         Staff staff = Staff.builder()
                 .name(request.name())
-                .email(request.email())
+                .staffCode(code)
+                .email(email)
                 .password(passwordEncoder.encode(request.password()))
                 .phone(request.phone())
                 .role(request.role())

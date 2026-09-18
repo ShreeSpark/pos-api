@@ -8,6 +8,7 @@ public record StaffResponse(
         UUID id,
         UUID tenantId,
         String name,
+        String staffCode,
         String email,
         String phone,
         String role,
