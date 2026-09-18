@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public interface StaffRepository extends JpaRepository<Staff, UUID> {
     Optional<Staff> findByEmailAndActiveTrue(String email);
+    Optional<Staff> findByPhoneAndActiveTrue(String phone);
     Optional<Staff> findByIdAndTenantIdAndActiveTrue(UUID id, UUID tenantId);
     List<Staff> findAllByTenantIdAndActiveTrue(UUID tenantId);
     boolean existsByEmailAndTenantId(String email, UUID tenantId);

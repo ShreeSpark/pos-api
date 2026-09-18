@@ -29,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse login(LoginRequest request) {
         Staff staff = staffRepository.findByEmailAndActiveTrue(request.email())
+                .or(() -> staffRepository.findByPhoneAndActiveTrue(request.email()))
                 .orElseThrow(InvalidCredentialsException::new);
 
         if (!passwordEncoder.matches(request.password(), staff.getPassword())) {
