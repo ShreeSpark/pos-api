@@ -21,6 +21,9 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Value("${app.upload.dir}")
     private String uploadDir;
 
+    @Value("${app.upload.base-url}")
+    private String baseUrl;
+
     @Override
     public String store(MultipartFile file, String folder) {
         if (file == null || file.isEmpty()) throw new RuntimeException("File is empty");
@@ -37,20 +40,22 @@ public class FileStorageServiceImpl implements FileStorageService {
             Files.createDirectories(targetDir);
             Path target = targetDir.resolve(fileName);
             Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-            return folder + "/" + fileName;
+            return baseUrl + "/" + folder + "/" + fileName;
         } catch (IOException e) {
             throw new RuntimeException("Failed to store file: " + e.getMessage());
         }
     }
 
     @Override
-    public void delete(String filePath) {
-        if (filePath == null) return;
+    public void delete(String fileUrl) {
+        if (fileUrl == null) return;
         try {
-            Path path = Paths.get(uploadDir, filePath);
+            // Extract relative path from full URL
+            String relativePath = fileUrl.replace(baseUrl + "/", "");
+            Path path = Paths.get(uploadDir, relativePath);
             Files.deleteIfExists(path);
         } catch (IOException e) {
-            // log but don't throw — deletion failure is non-critical
+            // log but don't throw
         }
     }
 

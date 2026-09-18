@@ -32,6 +32,7 @@ public class SecurityConfig {
             "/gst-rates",
             "/gst-rates/**",
             "/payments/upi/webhook",
+            "/uploads/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/api-docs/**",

@@ -43,6 +43,7 @@ app:
     refresh-token-expiry-ms: 604800000
   upload:
     dir: uploads/images
+    base-url: https://aapapi.rkworld.online/api/v1/uploads
     max-file-size: 5MB
     allowed-types: image/jpeg,image/png,image/webp
 
