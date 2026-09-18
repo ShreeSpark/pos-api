@@ -8,6 +8,7 @@ import com.shreespark.pos_api.device.entity.Device;
 import com.shreespark.pos_api.device.mapper.DeviceMapper;
 import com.shreespark.pos_api.device.repository.DeviceRepository;
 import com.shreespark.pos_api.device.service.DeviceService;
+import com.shreespark.pos_api.subscription.service.PlanLimitService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +23,13 @@ public class DeviceServiceImpl implements DeviceService {
 
     private final DeviceRepository deviceRepository;
     private final DeviceMapper deviceMapper;
+    private final PlanLimitService planLimitService;
 
     @Override
     @Transactional
     public DeviceResponse register(UUID tenantId, String registeredBy, RegisterDeviceRequest req) {
+        planLimitService.checkLimit(tenantId, PlanLimitService.LimitType.DEVICES,
+                deviceRepository.countByTenantIdAndActiveTrueAndStatus(tenantId, DeviceStatus.ACTIVE));
         if (deviceRepository.existsByDeviceCodeAndTenantId(req.deviceCode(), tenantId)) {
             throw new RuntimeException("Device already registered: " + req.deviceCode());
         }
@@ -34,7 +38,7 @@ public class DeviceServiceImpl implements DeviceService {
                 .deviceName(req.deviceName())
                 .platform(req.platform())
                 .appVersion(req.appVersion())
-                .status(DeviceStatus.ACTIVE)
+                .status(DeviceStatus.PENDING)
                 .registeredBy(registeredBy)
                 .lastSeenAt(Instant.now())
                 .build();
@@ -48,6 +52,14 @@ public class DeviceServiceImpl implements DeviceService {
         Device device = deviceRepository.findByDeviceCodeAndTenantId(deviceCode, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Device", deviceCode));
         device.setLastSeenAt(Instant.now());
+        return deviceMapper.toResponse(deviceRepository.save(device));
+    }
+
+    @Override
+    @Transactional
+    public DeviceResponse approve(UUID tenantId, UUID deviceId) {
+        Device device = findOrThrow(tenantId, deviceId);
+        device.setStatus(DeviceStatus.ACTIVE);
         return deviceMapper.toResponse(deviceRepository.save(device));
     }
 
@@ -80,6 +92,13 @@ public class DeviceServiceImpl implements DeviceService {
     @Transactional(readOnly = true)
     public List<DeviceResponse> getAll(UUID tenantId) {
         return deviceRepository.findAllByTenantIdAndActiveTrue(tenantId)
+                .stream().map(deviceMapper::toResponse).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DeviceResponse> getPending(UUID tenantId) {
+        return deviceRepository.findAllByTenantIdAndActiveTrueAndStatus(tenantId, DeviceStatus.PENDING)
                 .stream().map(deviceMapper::toResponse).toList();
     }
 

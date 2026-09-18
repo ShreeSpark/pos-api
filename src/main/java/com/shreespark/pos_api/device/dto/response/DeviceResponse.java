@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public record DeviceResponse(
         UUID id,
+        UUID tenantId,
         String deviceCode,
         String deviceName,
         String platform,

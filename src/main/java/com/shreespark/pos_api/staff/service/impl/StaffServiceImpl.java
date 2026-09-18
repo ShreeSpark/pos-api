@@ -8,6 +8,7 @@ import com.shreespark.pos_api.staff.entity.Staff;
 import com.shreespark.pos_api.staff.mapper.StaffMapper;
 import com.shreespark.pos_api.staff.repository.StaffRepository;
 import com.shreespark.pos_api.staff.service.StaffService;
+import com.shreespark.pos_api.subscription.service.PlanLimitService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,10 +25,13 @@ public class StaffServiceImpl implements StaffService {
     private final StaffRepository staffRepository;
     private final StaffMapper staffMapper;
     private final PasswordEncoder passwordEncoder;
+    private final PlanLimitService planLimitService;
 
     @Override
     @Transactional
     public StaffResponse create(UUID tenantId, CreateStaffRequest request) {
+        planLimitService.checkLimit(tenantId, PlanLimitService.LimitType.STAFF,
+                staffRepository.countByTenantIdAndActiveTrue(tenantId));
         if (staffRepository.existsByEmailAndTenantId(request.email(), tenantId)) {
             throw new RuntimeException("Staff with email already exists: " + request.email());
         }

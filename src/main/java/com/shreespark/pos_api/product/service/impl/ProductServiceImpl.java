@@ -15,6 +15,7 @@ import com.shreespark.pos_api.product.entity.Product;
 import com.shreespark.pos_api.product.mapper.ProductMapper;
 import com.shreespark.pos_api.product.repository.ProductRepository;
 import com.shreespark.pos_api.product.service.ProductService;
+import com.shreespark.pos_api.subscription.service.PlanLimitService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,10 +35,13 @@ public class ProductServiceImpl implements ProductService {
     private final StockLedgerRepository stockLedgerRepository;
     private final ProductMapper productMapper;
     private final FileStorageService fileStorageService;
+    private final PlanLimitService planLimitService;
 
     @Override
     @Transactional
     public ProductResponse create(UUID tenantId, CreateProductRequest req) {
+        planLimitService.checkLimit(tenantId, PlanLimitService.LimitType.PRODUCTS,
+                productRepository.countByTenantIdAndActiveTrue(tenantId));
         if (req.sku() != null && productRepository.existsBySkuAndTenantId(req.sku(), tenantId)) {
             throw new RuntimeException("SKU already exists: " + req.sku());
         }

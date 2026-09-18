@@ -51,6 +51,13 @@ public class DeviceController {
         return ResponseEntity.ok(ApiResponse.ok(deviceService.getById(extractTenantId(http), id)));
     }
 
+    @PatchMapping("/{id}/approve")
+    @PreAuthorize("hasAuthority('DEVICE_MANAGE')")
+    public ResponseEntity<ApiResponse<DeviceResponse>> approve(
+            @PathVariable UUID id, HttpServletRequest http) {
+        return ResponseEntity.ok(ApiResponse.ok(deviceService.approve(extractTenantId(http), id)));
+    }
+
     @PatchMapping("/{id}/suspend")
     @PreAuthorize("hasAuthority('DEVICE_MANAGE')")
     public ResponseEntity<ApiResponse<DeviceResponse>> suspend(

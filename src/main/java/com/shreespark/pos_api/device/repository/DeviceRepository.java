@@ -13,4 +13,6 @@ public interface DeviceRepository extends JpaRepository<Device, UUID> {
     Optional<Device> findByDeviceCodeAndTenantId(String deviceCode, UUID tenantId);
     boolean existsByDeviceCodeAndTenantId(String deviceCode, UUID tenantId);
     long countByTenantIdAndActiveTrue(UUID tenantId);
+    long countByTenantIdAndActiveTrueAndStatus(UUID tenantId, com.shreespark.pos_api.common.enums.DeviceStatus status);
+    List<Device> findAllByTenantIdAndActiveTrueAndStatus(UUID tenantId, com.shreespark.pos_api.common.enums.DeviceStatus status);
 }

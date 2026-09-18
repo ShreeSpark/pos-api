@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class DeviceMapper {
     public DeviceResponse toResponse(Device d) {
         return new DeviceResponse(
-                d.getId(), d.getDeviceCode(), d.getDeviceName(),
+                d.getId(), d.getTenantId(), d.getDeviceCode(), d.getDeviceName(),
                 d.getPlatform(), d.getAppVersion(), d.getStatus(),
                 d.getLastSeenAt(), d.getCreatedAt()
         );

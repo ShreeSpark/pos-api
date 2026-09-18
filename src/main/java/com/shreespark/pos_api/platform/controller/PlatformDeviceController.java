@@ -38,6 +38,13 @@ public class PlatformDeviceController {
         return ResponseEntity.ok(ApiResponse.ok(deviceService.getAll(tenantId)));
     }
 
+    // Approve a pending device
+    @PatchMapping("/{tenantId}/{deviceId}/approve")
+    public ResponseEntity<ApiResponse<DeviceResponse>> approve(
+            @PathVariable UUID tenantId, @PathVariable UUID deviceId) {
+        return ResponseEntity.ok(ApiResponse.ok(deviceService.approve(tenantId, deviceId)));
+    }
+
     // Suspend a device platform-wide
     @PatchMapping("/{tenantId}/{deviceId}/suspend")
     public ResponseEntity<ApiResponse<DeviceResponse>> suspend(
