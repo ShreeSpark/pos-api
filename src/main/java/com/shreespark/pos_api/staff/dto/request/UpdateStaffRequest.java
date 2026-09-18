@@ -7,6 +7,8 @@ import java.util.Set;
 
 public record UpdateStaffRequest(
         String name,
+        String staffCode,
+        String password,
         String phone,
         Role role,
         Set<Permission> permissions

@@ -79,6 +79,8 @@ public class StaffServiceImpl implements StaffService {
         Staff staff = findOrThrow(tenantId, staffId);
 
         if (request.name() != null) staff.setName(request.name());
+        if (request.staffCode() != null && !request.staffCode().isBlank()) staff.setStaffCode(request.staffCode().trim());
+        if (request.password() != null && !request.password().isBlank()) staff.setPassword(passwordEncoder.encode(request.password()));
         if (request.phone() != null) staff.setPhone(request.phone());
         if (request.role() != null) staff.setRole(request.role());
         if (request.permissions() != null) staff.setPermissions(request.permissions());
