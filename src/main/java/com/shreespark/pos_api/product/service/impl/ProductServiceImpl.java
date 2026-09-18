@@ -46,10 +46,20 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("SKU already exists: " + req.sku());
         }
 
+        String sku = req.sku();
+        if (sku == null || sku.isBlank()) {
+            long next = productRepository.countByTenantId(tenantId) + 1;
+            String candidate;
+            do {
+                candidate = String.format("PRD-%05d", next++);
+            } while (productRepository.existsBySkuAndTenantId(candidate, tenantId));
+            sku = candidate;
+        }
+
         Product product = Product.builder()
                 .name(req.name())
                 .description(req.description())
-                .sku(req.sku())
+                .sku(sku)
                 .retailPrice(req.retailPrice())
                 .wholesalePrice(req.wholesalePrice())
                 .dealerPrice(req.dealerPrice())

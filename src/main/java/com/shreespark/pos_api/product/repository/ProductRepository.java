@@ -17,6 +17,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     boolean existsBySkuAndTenantId(String sku, UUID tenantId);
     long countByTenantIdAndActiveTrue(UUID tenantId);
+    long countByTenantId(UUID tenantId);
 
     @Query("SELECT p FROM Product p JOIN p.barcodes b " +
            "WHERE b.value = :value AND p.tenantId = :tenantId AND p.active = true")
