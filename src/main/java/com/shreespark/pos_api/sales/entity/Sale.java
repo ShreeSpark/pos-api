@@ -29,6 +29,12 @@ public class Sale extends BaseEntity {
 
     private UUID staffId;
 
+    private String staffName;
+
+    private UUID editedByStaffId;
+
+    private String editedByStaffName;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

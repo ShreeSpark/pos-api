@@ -2,6 +2,7 @@ package com.shreespark.pos_api.sales.controller;
 
 import com.shreespark.pos_api.common.ApiResponse;
 import com.shreespark.pos_api.sales.dto.request.CreateSaleRequest;
+import com.shreespark.pos_api.sales.dto.request.UpdateSaleRequest;
 import com.shreespark.pos_api.sales.dto.response.SaleResponse;
 import com.shreespark.pos_api.sales.service.SaleService;
 import jakarta.validation.Valid;
@@ -64,11 +65,32 @@ public class SaleController {
         return ResponseEntity.ok(ApiResponse.ok(saleService.getByCustomer(tenantId, customerId)));
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<ApiResponse<SaleResponse>> update(
+            @RequestHeader("X-Tenant-Id") UUID tenantId,
+            @AuthenticationPrincipal String staffId,
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateSaleRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok("Sale updated", saleService.update(tenantId, UUID.fromString(staffId), id, request)));
+    }
+
     @PatchMapping("/{id}/cancel")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<SaleResponse>> cancel(
             @RequestHeader("X-Tenant-Id") UUID tenantId,
+            @AuthenticationPrincipal String staffId,
             @PathVariable UUID id) {
-        return ResponseEntity.ok(ApiResponse.ok("Sale cancelled", saleService.cancel(tenantId, id)));
+        return ResponseEntity.ok(ApiResponse.ok("Sale cancelled", saleService.cancel(tenantId, UUID.fromString(staffId), id)));
+    }
+
+    @PostMapping("/{id}/print-log")
+    @PreAuthorize("hasAuthority('BILLING_VIEW_ALL')")
+    public ResponseEntity<ApiResponse<SaleResponse>> logPrint(
+            @RequestHeader("X-Tenant-Id") UUID tenantId,
+            @AuthenticationPrincipal String staffId,
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "CASH_MEMO") String printType) {
+        return ResponseEntity.ok(ApiResponse.ok("Print logged", saleService.logPrint(tenantId, UUID.fromString(staffId), id, printType)));
     }
 }

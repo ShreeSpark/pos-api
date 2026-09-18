@@ -10,6 +10,10 @@ public record SaleResponse(
         String invoiceNumber,
         UUID customerId,
         String customerName,
+        UUID staffId,
+        String staffName,
+        UUID editedByStaffId,
+        String editedByStaffName,
         String status,
         String paymentMethod,
         BigDecimal subtotal,
@@ -24,7 +28,9 @@ public record SaleResponse(
         boolean interState,
         String note,
         List<SaleItemResponse> items,
-        Instant createdAt
+        List<SaleAuditLogResponse> auditLogs,
+        Instant createdAt,
+        Instant updatedAt
 ) {
     public record SaleItemResponse(
             UUID id,
