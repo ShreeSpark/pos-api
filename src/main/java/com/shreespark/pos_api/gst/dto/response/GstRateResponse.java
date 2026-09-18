@@ -10,5 +10,6 @@ public record GstRateResponse(
         BigDecimal cgstRate,
         BigDecimal sgstRate,
         BigDecimal igstRate,
+        String hsnCode,
         String description
 ) {}

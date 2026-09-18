@@ -15,6 +15,7 @@ public class GstRateMapper {
                 g.getCgstRate(),
                 g.getSgstRate(),
                 g.getIgstRate(),
+                g.getHsnCode(),
                 g.getDescription()
         );
     }

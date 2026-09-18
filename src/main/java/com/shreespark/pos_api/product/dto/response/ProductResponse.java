@@ -20,6 +20,10 @@ public record ProductResponse(
         CategorySummary category,
         BrandSummary brand,
         List<BarcodeSummary> barcodes,
+        String hsnCode,
+        UUID gstRateId,
+        String gstRateName,
+        BigDecimal gstPercent,
         Instant createdAt
 ) {
     public record CategorySummary(

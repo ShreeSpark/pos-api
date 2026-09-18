@@ -101,8 +101,11 @@ public class SaleServiceImpl implements SaleService {
             BigDecimal lineSubtotal = unitPrice.multiply(BigDecimal.valueOf(itemReq.quantity()));
             BigDecimal taxableAmt   = lineSubtotal.subtract(discountAmt);
 
-            // GST from category
-            GstRate gst = product.getCategory() != null ? product.getCategory().getGstRate() : null;
+            // Effective GST (Product override -> Category default -> None/0%)
+            GstRate gst = product.getGstRate() != null
+                    ? product.getGstRate()
+                    : (product.getCategory() != null ? product.getCategory().getGstRate() : null);
+
             BigDecimal cgstPct = BigDecimal.ZERO, sgstPct = BigDecimal.ZERO, igstPct = BigDecimal.ZERO;
             BigDecimal cgstAmt = BigDecimal.ZERO, sgstAmt = BigDecimal.ZERO, igstAmt = BigDecimal.ZERO;
 
@@ -120,7 +123,12 @@ public class SaleServiceImpl implements SaleService {
 
             BigDecimal lineTotal = taxableAmt.add(cgstAmt).add(sgstAmt).add(igstAmt);
 
-            String hsnCode = product.getCategory() != null ? product.getCategory().getHsnCode() : null;
+            // Effective HSN (GST Slab -> Product override -> Category default -> None)
+            String hsnCode = (gst != null && gst.getHsnCode() != null && !gst.getHsnCode().isBlank())
+                    ? gst.getHsnCode()
+                    : (product.getHsnCode() != null
+                    ? product.getHsnCode()
+                    : (product.getCategory() != null ? product.getCategory().getHsnCode() : null));
 
             SaleItem item = SaleItem.builder()
                     .productId(product.getId())

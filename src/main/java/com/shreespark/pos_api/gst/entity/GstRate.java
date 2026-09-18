@@ -35,6 +35,9 @@ public class GstRate extends BaseEntity {
     @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal igstRate;
 
-    // HSN codes that typically fall under this slab (informational)
+    // Standard HSN / SAC Code associated with this GST slab
+    private String hsnCode;
+
+    // Additional description
     private String description;
 }

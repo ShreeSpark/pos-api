@@ -4,6 +4,7 @@ import com.shreespark.pos_api.barcode.entity.Barcode;
 import com.shreespark.pos_api.brand.entity.Brand;
 import com.shreespark.pos_api.category.entity.Category;
 import com.shreespark.pos_api.common.BaseEntity;
+import com.shreespark.pos_api.gst.entity.GstRate;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -59,6 +60,13 @@ public class Product extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
     private Brand brand;
+
+    // Optional Product-level HSN & GST Overrides (overrides Category defaults)
+    private String hsnCode;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gst_rate_id")
+    private GstRate gstRate;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

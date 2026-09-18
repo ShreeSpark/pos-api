@@ -35,11 +35,16 @@ public class CategoryServiceImpl implements CategoryService {
         if (categoryRepository.existsByNameAndTenantId(request.name(), tenantId)) {
             throw new RuntimeException("Category already exists: " + request.name());
         }
+        GstRate gst = resolveGstRate(request.gstRateId());
+        String hsn = request.hsnCode();
+        if ((hsn == null || hsn.isBlank()) && gst != null && gst.getHsnCode() != null) {
+            hsn = gst.getHsnCode();
+        }
         Category category = Category.builder()
                 .name(request.name())
                 .description(request.description())
-                .hsnCode(request.hsnCode())
-                .gstRate(resolveGstRate(request.gstRateId()))
+                .hsnCode(hsn)
+                .gstRate(gst)
                 .build();
         category.setTenantId(tenantId);
         return categoryMapper.toResponse(categoryRepository.save(category));
@@ -62,8 +67,17 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = findOrThrow(tenantId, id);
         if (request.name() != null) category.setName(request.name());
         if (request.description() != null) category.setDescription(request.description());
-        if (request.hsnCode() != null) category.setHsnCode(request.hsnCode());
-        if (request.gstRateId() != null) category.setGstRate(resolveGstRate(request.gstRateId()));
+        if (request.gstRateId() != null) {
+            GstRate gst = resolveGstRate(request.gstRateId());
+            category.setGstRate(gst);
+            if ((request.hsnCode() == null || request.hsnCode().isBlank()) && gst != null && gst.getHsnCode() != null) {
+                category.setHsnCode(gst.getHsnCode());
+            } else if (request.hsnCode() != null) {
+                category.setHsnCode(request.hsnCode());
+            }
+        } else if (request.hsnCode() != null) {
+            category.setHsnCode(request.hsnCode());
+        }
         return categoryMapper.toResponse(categoryRepository.save(category));
     }
 

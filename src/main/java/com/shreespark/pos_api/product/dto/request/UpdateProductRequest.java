@@ -14,5 +14,7 @@ public record UpdateProductRequest(
         Integer lowStockThreshold,
         Integer moq,
         UUID categoryId,
-        UUID brandId
+        UUID brandId,
+        String hsnCode,
+        UUID gstRateId
 ) {}

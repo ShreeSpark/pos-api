@@ -9,5 +9,6 @@ import java.math.BigDecimal;
 public record CreateGstRateRequest(
         @NotBlank String name,
         @NotNull @DecimalMin("0.0") BigDecimal rate,
+        String hsnCode,
         String description
 ) {}

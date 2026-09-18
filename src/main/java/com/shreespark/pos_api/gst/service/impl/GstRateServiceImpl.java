@@ -31,7 +31,7 @@ public class GstRateServiceImpl implements GstRateService {
         if (gstRateRepository.existsByRate(request.rate())) {
             throw new RuntimeException("GST rate already exists: " + request.rate() + "%");
         }
-        GstRate gstRate = buildGstRate(request.name(), request.rate(), request.description());
+        GstRate gstRate = buildGstRate(request.name(), request.rate(), request.hsnCode(), request.description());
         return gstRateMapper.toResponse(gstRateRepository.save(gstRate));
     }
 
@@ -52,6 +52,7 @@ public class GstRateServiceImpl implements GstRateService {
         GstRate gstRate = findOrThrow(id);
 
         if (request.name() != null) gstRate.setName(request.name());
+        if (request.hsnCode() != null) gstRate.setHsnCode(request.hsnCode());
         if (request.description() != null) gstRate.setDescription(request.description());
 
         if (request.rate() != null) {
@@ -74,7 +75,7 @@ public class GstRateServiceImpl implements GstRateService {
         gstRateRepository.save(gstRate);
     }
 
-    private GstRate buildGstRate(String name, BigDecimal rate, String description) {
+    private GstRate buildGstRate(String name, BigDecimal rate, String hsnCode, String description) {
         BigDecimal half = rate.divide(new BigDecimal("2"), 2, RoundingMode.HALF_UP);
         GstRate g = GstRate.builder()
                 .name(name)
@@ -82,6 +83,7 @@ public class GstRateServiceImpl implements GstRateService {
                 .cgstRate(half)
                 .sgstRate(half)
                 .igstRate(rate)
+                .hsnCode(hsnCode)
                 .description(description)
                 .build();
         return g;

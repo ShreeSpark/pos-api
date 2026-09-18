@@ -5,5 +5,6 @@ import java.math.BigDecimal;
 public record UpdateGstRateRequest(
         String name,
         BigDecimal rate,
+        String hsnCode,
         String description
 ) {}

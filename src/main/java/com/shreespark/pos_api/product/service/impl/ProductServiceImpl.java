@@ -6,6 +6,8 @@ import com.shreespark.pos_api.category.entity.Category;
 import com.shreespark.pos_api.category.repository.CategoryRepository;
 import com.shreespark.pos_api.common.exception.ResourceNotFoundException;
 import com.shreespark.pos_api.common.service.FileStorageService;
+import com.shreespark.pos_api.gst.entity.GstRate;
+import com.shreespark.pos_api.gst.repository.GstRateRepository;
 import com.shreespark.pos_api.inventory.entity.StockLedger;
 import com.shreespark.pos_api.inventory.repository.StockLedgerRepository;
 import com.shreespark.pos_api.product.dto.request.CreateProductRequest;
@@ -33,6 +35,7 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final BrandRepository brandRepository;
     private final StockLedgerRepository stockLedgerRepository;
+    private final GstRateRepository gstRateRepository;
     private final ProductMapper productMapper;
     private final FileStorageService fileStorageService;
     private final PlanLimitService planLimitService;
@@ -68,6 +71,8 @@ public class ProductServiceImpl implements ProductService {
                 .moq(req.moq() != null ? req.moq() : 1)
                 .category(resolveCategory(tenantId, req.categoryId()))
                 .brand(resolveBrand(tenantId, req.brandId()))
+                .hsnCode(req.hsnCode())
+                .gstRate(resolveGstRate(req.gstRateId()))
                 .build();
 
         product.setTenantId(tenantId);
@@ -130,6 +135,8 @@ public class ProductServiceImpl implements ProductService {
         if (req.moq() != null) product.setMoq(req.moq());
         if (req.categoryId() != null) product.setCategory(resolveCategory(tenantId, req.categoryId()));
         if (req.brandId() != null) product.setBrand(resolveBrand(tenantId, req.brandId()));
+        if (req.hsnCode() != null) product.setHsnCode(req.hsnCode());
+        if (req.gstRateId() != null) product.setGstRate(resolveGstRate(req.gstRateId()));
 
         return productMapper.toResponse(productRepository.save(product));
     }
@@ -167,5 +174,11 @@ public class ProductServiceImpl implements ProductService {
         if (brandId == null) return null;
         return brandRepository.findByIdAndTenantIdAndActiveTrue(brandId, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Brand", brandId));
+    }
+
+    private GstRate resolveGstRate(UUID gstRateId) {
+        if (gstRateId == null) return null;
+        return gstRateRepository.findById(gstRateId)
+                .orElseThrow(() -> new ResourceNotFoundException("GstRate", gstRateId));
     }
 }

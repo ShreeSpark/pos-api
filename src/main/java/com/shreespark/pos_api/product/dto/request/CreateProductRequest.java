@@ -19,5 +19,7 @@ public record CreateProductRequest(
         @Min(1) Integer lowStockThreshold,
         @Min(1) Integer moq,
         UUID categoryId,
-        UUID brandId
+        UUID brandId,
+        String hsnCode,
+        UUID gstRateId
 ) {}

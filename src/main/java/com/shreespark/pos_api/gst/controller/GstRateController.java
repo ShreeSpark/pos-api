@@ -23,7 +23,7 @@ public class GstRateController {
     private final GstRateService gstRateService;
 
     @PostMapping
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<GstRateResponse>> create(
             @Valid @RequestBody CreateGstRateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -42,7 +42,7 @@ public class GstRateController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<GstRateResponse>> update(
             @PathVariable UUID id,
             @RequestBody UpdateGstRateRequest request) {
@@ -50,7 +50,7 @@ public class GstRateController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
         gstRateService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok("GST rate deleted", null));
