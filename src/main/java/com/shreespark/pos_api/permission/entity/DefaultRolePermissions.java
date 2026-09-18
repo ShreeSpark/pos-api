@@ -20,6 +20,8 @@ public final class DefaultRolePermissions {
                 Permission.BILLING_CREATE,
                 Permission.BILLING_VIEW_ALL,
                 Permission.BILLING_APPLY_DISCOUNT,
+                Permission.BILLING_EDIT,
+                Permission.BILLING_CANCEL,
                 Permission.PRODUCTS_CREATE,
                 Permission.PRODUCTS_EDIT,
                 Permission.BARCODE_GENERATE,

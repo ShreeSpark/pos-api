@@ -36,14 +36,14 @@ public class SaleController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('BILLING_VIEW_ALL')")
+    @PreAuthorize("hasAnyAuthority('BILLING_VIEW_ALL', 'BILLING_CREATE')")
     public ResponseEntity<ApiResponse<List<SaleResponse>>> getAll(
             @RequestHeader("X-Tenant-Id") UUID tenantId) {
         return ResponseEntity.ok(ApiResponse.ok(saleService.getAll(tenantId)));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('BILLING_VIEW_ALL')")
+    @PreAuthorize("hasAnyAuthority('BILLING_VIEW_ALL', 'BILLING_CREATE')")
     public ResponseEntity<ApiResponse<SaleResponse>> getById(
             @RequestHeader("X-Tenant-Id") UUID tenantId,
             @PathVariable UUID id) {
@@ -51,7 +51,7 @@ public class SaleController {
     }
 
     @GetMapping("/invoice/{invoiceNumber}")
-    @PreAuthorize("hasAuthority('BILLING_VIEW_ALL')")
+    @PreAuthorize("hasAnyAuthority('BILLING_VIEW_ALL', 'BILLING_CREATE')")
     public ResponseEntity<ApiResponse<SaleResponse>> getByInvoice(
             @RequestHeader("X-Tenant-Id") UUID tenantId,
             @PathVariable String invoiceNumber) {
@@ -59,7 +59,7 @@ public class SaleController {
     }
 
     @GetMapping("/customer/{customerId}")
-    @PreAuthorize("hasAuthority('BILLING_VIEW_ALL')")
+    @PreAuthorize("hasAnyAuthority('BILLING_VIEW_ALL', 'BILLING_CREATE')")
     public ResponseEntity<ApiResponse<List<SaleResponse>>> getByCustomer(
             @RequestHeader("X-Tenant-Id") UUID tenantId,
             @PathVariable UUID customerId) {
@@ -67,7 +67,7 @@ public class SaleController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') || hasAuthority('BILLING_EDIT')")
     public ResponseEntity<ApiResponse<SaleResponse>> update(
             @RequestHeader("X-Tenant-Id") UUID tenantId,
             @AuthenticationPrincipal String staffId,
@@ -77,7 +77,7 @@ public class SaleController {
     }
 
     @PatchMapping("/{id}/cancel")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') || hasAuthority('BILLING_CANCEL')")
     public ResponseEntity<ApiResponse<SaleResponse>> cancel(
             @RequestHeader("X-Tenant-Id") UUID tenantId,
             @AuthenticationPrincipal String staffId,
@@ -86,7 +86,7 @@ public class SaleController {
     }
 
     @PostMapping("/{id}/print-log")
-    @PreAuthorize("hasAuthority('BILLING_VIEW_ALL')")
+    @PreAuthorize("hasAnyAuthority('BILLING_VIEW_ALL', 'BILLING_CREATE')")
     public ResponseEntity<ApiResponse<SaleResponse>> logPrint(
             @RequestHeader("X-Tenant-Id") UUID tenantId,
             @AuthenticationPrincipal String staffId,

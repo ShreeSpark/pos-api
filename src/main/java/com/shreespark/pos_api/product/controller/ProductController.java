@@ -34,14 +34,14 @@ public class ProductController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('PRODUCTS_EDIT')")
+    @PreAuthorize("hasAnyAuthority('PRODUCTS_VIEW', 'PRODUCTS_EDIT', 'PRODUCTS_CREATE', 'BILLING_CREATE')")
     public ResponseEntity<ApiResponse<List<ProductResponse>>> getAll(
             @RequestHeader("X-Tenant-Id") UUID tenantId) {
         return ResponseEntity.ok(ApiResponse.ok(productService.getAll(tenantId)));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('PRODUCTS_EDIT')")
+    @PreAuthorize("hasAnyAuthority('PRODUCTS_VIEW', 'PRODUCTS_EDIT', 'PRODUCTS_CREATE', 'BILLING_CREATE')")
     public ResponseEntity<ApiResponse<ProductResponse>> getById(
             @RequestHeader("X-Tenant-Id") UUID tenantId,
             @PathVariable UUID id) {
