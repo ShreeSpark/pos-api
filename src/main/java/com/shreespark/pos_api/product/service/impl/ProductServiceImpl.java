@@ -113,6 +113,15 @@ public class ProductServiceImpl implements ProductService {
         if (req.name() != null) product.setName(req.name());
         if (req.description() != null) product.setDescription(req.description());
         if (req.sku() != null) product.setSku(req.sku());
+        // auto-generate SKU if product still has none
+        if (product.getSku() == null || product.getSku().isBlank()) {
+            long next = productRepository.countByTenantId(tenantId) + 1;
+            String candidate;
+            do {
+                candidate = String.format("PRD-%05d", next++);
+            } while (productRepository.existsBySkuAndTenantId(candidate, tenantId));
+            product.setSku(candidate);
+        }
         if (req.retailPrice() != null) product.setRetailPrice(req.retailPrice());
         if (req.wholesalePrice() != null) product.setWholesalePrice(req.wholesalePrice());
         if (req.dealerPrice() != null) product.setDealerPrice(req.dealerPrice());
