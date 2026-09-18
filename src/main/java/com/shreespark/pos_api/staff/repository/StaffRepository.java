@@ -8,8 +8,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface StaffRepository extends JpaRepository<Staff, UUID> {
+    List<Staff> findAllByStaffCodeAndActiveTrue(String staffCode);
+    List<Staff> findAllByEmailAndActiveTrue(String email);
+    List<Staff> findAllByPhoneAndActiveTrue(String phone);
     Optional<Staff> findByStaffCodeAndActiveTrue(String staffCode);
-    Optional<Staff> findByStaffCodeOrEmailAndActiveTrue(String staffCode, String email);
     Optional<Staff> findByEmailAndActiveTrue(String email);
     Optional<Staff> findByPhoneAndActiveTrue(String phone);
     Optional<Staff> findByIdAndTenantIdAndActiveTrue(UUID id, UUID tenantId);

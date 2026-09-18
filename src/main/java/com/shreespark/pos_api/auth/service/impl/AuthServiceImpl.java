@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -28,14 +29,19 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        Staff staff = staffRepository.findByStaffCodeAndActiveTrue(request.email())
-                .or(() -> staffRepository.findByEmailAndActiveTrue(request.email()))
-                .or(() -> staffRepository.findByPhoneAndActiveTrue(request.email()))
-                .orElseThrow(InvalidCredentialsException::new);
-
-        if (!passwordEncoder.matches(request.password(), staff.getPassword())) {
-            throw new InvalidCredentialsException();
+        String identifier = request.email();
+        List<Staff> candidates = staffRepository.findAllByStaffCodeAndActiveTrue(identifier);
+        if (candidates.isEmpty()) {
+            candidates = staffRepository.findAllByEmailAndActiveTrue(identifier);
         }
+        if (candidates.isEmpty()) {
+            candidates = staffRepository.findAllByPhoneAndActiveTrue(identifier);
+        }
+
+        Staff staff = candidates.stream()
+                .filter(s -> passwordEncoder.matches(request.password(), s.getPassword()))
+                .findFirst()
+                .orElseThrow(InvalidCredentialsException::new);
 
         Set<Permission> effectivePermissions = rolePermissionService.resolveEffectivePermissions(
                 staff.getTenantId(), staff.getRole(), staff.getPermissions());
