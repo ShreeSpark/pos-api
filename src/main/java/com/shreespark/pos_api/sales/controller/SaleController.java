@@ -3,6 +3,7 @@ package com.shreespark.pos_api.sales.controller;
 import com.shreespark.pos_api.common.ApiResponse;
 import com.shreespark.pos_api.sales.dto.request.CreateSaleRequest;
 import com.shreespark.pos_api.sales.dto.request.UpdateSaleRequest;
+import com.shreespark.pos_api.sales.dto.response.SaleAuditLogResponse;
 import com.shreespark.pos_api.sales.dto.response.SaleResponse;
 import com.shreespark.pos_api.sales.service.SaleService;
 import jakarta.validation.Valid;
@@ -92,5 +93,12 @@ public class SaleController {
             @PathVariable UUID id,
             @RequestParam(defaultValue = "CASH_MEMO") String printType) {
         return ResponseEntity.ok(ApiResponse.ok("Print logged", saleService.logPrint(tenantId, UUID.fromString(staffId), id, printType)));
+    }
+
+    @GetMapping("/audit-logs")
+    @PreAuthorize("hasAuthority('BILLING_VIEW_ALL')")
+    public ResponseEntity<ApiResponse<List<SaleAuditLogResponse>>> getAuditLogs(
+            @RequestHeader("X-Tenant-Id") UUID tenantId) {
+        return ResponseEntity.ok(ApiResponse.ok(saleService.getAllAuditLogs(tenantId)));
     }
 }

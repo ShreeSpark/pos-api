@@ -17,6 +17,7 @@ import com.shreespark.pos_api.product.repository.ProductRepository;
 import com.shreespark.pos_api.sales.dto.request.CreateSaleRequest;
 import com.shreespark.pos_api.sales.dto.request.SaleItemRequest;
 import com.shreespark.pos_api.sales.dto.request.UpdateSaleRequest;
+import com.shreespark.pos_api.sales.dto.response.SaleAuditLogResponse;
 import com.shreespark.pos_api.sales.dto.response.SaleResponse;
 import com.shreespark.pos_api.sales.entity.Sale;
 import com.shreespark.pos_api.sales.entity.SaleAuditLog;
@@ -393,6 +394,13 @@ public class SaleServiceImpl implements SaleService {
 
         List<SaleAuditLog> logs = saleAuditLogRepository.findBySaleIdAndTenantIdOrderByCreatedAtDesc(sale.getId(), tenantId);
         return saleMapper.toResponse(sale, logs);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SaleAuditLogResponse> getAllAuditLogs(UUID tenantId) {
+        return saleAuditLogRepository.findAllByTenantIdOrderByCreatedAtDesc(tenantId)
+                .stream().map(saleMapper::toAuditLogResponse).toList();
     }
 
     private void cancelSaleOperations(UUID tenantId, Sale sale) {

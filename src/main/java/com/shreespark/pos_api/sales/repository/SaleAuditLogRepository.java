@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface SaleAuditLogRepository extends JpaRepository<SaleAuditLog, UUID> {
     List<SaleAuditLog> findBySaleIdAndTenantIdOrderByCreatedAtDesc(UUID saleId, UUID tenantId);
+    List<SaleAuditLog> findAllByTenantIdOrderByCreatedAtDesc(UUID tenantId);
 }
