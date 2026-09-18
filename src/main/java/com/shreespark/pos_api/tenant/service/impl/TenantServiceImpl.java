@@ -60,6 +60,7 @@ public class TenantServiceImpl implements TenantService {
 
         Staff admin = Staff.builder()
                 .name(request.adminName())
+                .staffCode("1001")
                 .email(request.email())
                 .password(passwordEncoder.encode(request.adminPassword()))
                 .role(Role.ADMIN)
