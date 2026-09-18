@@ -7,5 +7,5 @@ import java.time.LocalDate;
 
 public record ChangeTenantPlanRequest(
         @NotNull SubscriptionPlan plan,
-        @NotNull LocalDate newExpiry
+        LocalDate newExpiry
 ) {}

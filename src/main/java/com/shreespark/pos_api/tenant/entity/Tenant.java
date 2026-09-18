@@ -38,6 +38,6 @@ public class Tenant extends BaseEntity {
     @Column(nullable = false)
     private SubscriptionPlan subscriptionPlan;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDate subscriptionExpiry;
 }

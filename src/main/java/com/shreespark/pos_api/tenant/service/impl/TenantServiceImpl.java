@@ -118,7 +118,7 @@ public class TenantServiceImpl implements TenantService {
     public TenantResponse changePlan(UUID id, SubscriptionPlan plan, LocalDate newExpiry) {
         Tenant tenant = findActiveOrThrow(id);
         tenant.setSubscriptionPlan(plan);
-        tenant.setSubscriptionExpiry(newExpiry);
+        tenant.setSubscriptionExpiry(newExpiry); // null = lifetime
         return tenantMapper.toResponse(tenantRepository.save(tenant));
     }
 

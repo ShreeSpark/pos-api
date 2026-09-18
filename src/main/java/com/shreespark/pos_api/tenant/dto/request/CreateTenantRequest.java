@@ -14,7 +14,7 @@ public record CreateTenantRequest(
         String address,
         String gstin,
         @NotNull SubscriptionPlan subscriptionPlan,
-        @NotNull LocalDate subscriptionExpiry,
+        LocalDate subscriptionExpiry,
         @NotBlank String adminName,
         @NotBlank String adminPassword
 ) {}
