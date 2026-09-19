@@ -2,11 +2,14 @@ package com.shreespark.pos_api.lead.controller;
 
 import com.shreespark.pos_api.lead.entity.LeadQuery;
 import com.shreespark.pos_api.lead.repository.LeadQueryRepository;
+import com.shreespark.pos_api.subscription.dto.response.SubscriptionPlanConfigResponse;
+import com.shreespark.pos_api.subscription.service.SubscriptionPlanConfigService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -15,6 +18,7 @@ import java.util.Map;
 public class PublicLeadController {
 
     private final LeadQueryRepository leadQueryRepository;
+    private final SubscriptionPlanConfigService planConfigService;
 
     @Data
     public static class CreateLeadRequest {
@@ -34,6 +38,11 @@ public class PublicLeadController {
         private String phone;
         private String subject;
         private String message;
+    }
+
+    @GetMapping("/plans")
+    public ResponseEntity<List<SubscriptionPlanConfigResponse>> getPublicPlans() {
+        return ResponseEntity.ok(planConfigService.getAll());
     }
 
     @PostMapping("/leads")
