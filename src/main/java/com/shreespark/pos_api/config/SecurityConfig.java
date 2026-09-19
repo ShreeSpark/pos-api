@@ -29,6 +29,7 @@ public class SecurityConfig {
     private static final String[] PUBLIC_PATHS = {
             "/tenant/auth/**",
             "/platform/auth/**",
+            "/app/releases/**",
             "/gst-rates",
             "/gst-rates/**",
             "/uploads/**",
@@ -42,6 +43,7 @@ public class SecurityConfig {
 
     private static final String[] SUPER_ADMIN_PATHS = {
             "/platform/tenants/**",
+            "/platform/releases/**",
             "/platform/gst-rates/**",
             "/platform/subscription-plans/**",
             "/platform/devices/**"
