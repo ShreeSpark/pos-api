@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.web.multipart.MultipartFile;
+import com.shreespark.pos_api.common.service.FileStorageService;
+
 @RestController
 @RequestMapping("/platform/releases")
 @RequiredArgsConstructor
@@ -21,6 +24,14 @@ import java.util.UUID;
 public class PlatformReleaseController {
 
     private final AppReleaseRepository releaseRepository;
+    private final FileStorageService fileStorageService;
+
+    @PostMapping("/upload")
+    public ResponseEntity<ApiResponse<String>> uploadInstallerFile(
+            @RequestParam("file") MultipartFile file) {
+        String fileUrl = fileStorageService.store(file, "releases");
+        return ResponseEntity.ok(ApiResponse.ok("Installer uploaded successfully", fileUrl));
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ReleaseResponse>>> getAllReleases() {
