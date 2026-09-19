@@ -28,17 +28,28 @@ public class DeviceServiceImpl implements DeviceService {
     @Override
     @Transactional
     public DeviceResponse register(UUID tenantId, String registeredBy, RegisterDeviceRequest req) {
+        var existingOpt = deviceRepository.findByDeviceCodeAndTenantId(req.deviceCode(), tenantId);
+        if (existingOpt.isPresent()) {
+            Device existing = existingOpt.get();
+            if (existing.getStatus() == DeviceStatus.SUSPENDED) {
+                throw new RuntimeException("Device access is suspended by platform admin");
+            }
+            existing.setLastSeenAt(Instant.now());
+            if (req.deviceName() != null) existing.setDeviceName(req.deviceName());
+            if (req.platform() != null) existing.setPlatform(req.platform());
+            if (req.appVersion() != null) existing.setAppVersion(req.appVersion());
+            return deviceMapper.toResponse(deviceRepository.save(existing));
+        }
+
         planLimitService.checkLimit(tenantId, PlanLimitService.LimitType.DEVICES,
                 deviceRepository.countByTenantIdAndActiveTrueAndStatus(tenantId, DeviceStatus.ACTIVE));
-        if (deviceRepository.existsByDeviceCodeAndTenantId(req.deviceCode(), tenantId)) {
-            throw new RuntimeException("Device already registered: " + req.deviceCode());
-        }
+
         Device device = Device.builder()
                 .deviceCode(req.deviceCode())
                 .deviceName(req.deviceName())
                 .platform(req.platform())
                 .appVersion(req.appVersion())
-                .status(DeviceStatus.PENDING)
+                .status(DeviceStatus.ACTIVE)
                 .registeredBy(registeredBy)
                 .lastSeenAt(Instant.now())
                 .build();

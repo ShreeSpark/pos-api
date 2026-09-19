@@ -29,6 +29,9 @@ public class PlatformTenantController {
     private final TenantService tenantService;
     private final TenantRepository tenantRepository;
     private final DeviceRepository deviceRepository;
+    private final com.shreespark.pos_api.staff.repository.StaffRepository staffRepository;
+    private final com.shreespark.pos_api.staff.mapper.StaffMapper staffMapper;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     @GetMapping("/overview")
     public ResponseEntity<ApiResponse<PlatformOverviewResponse>> overview() {
@@ -49,6 +52,40 @@ public class PlatformTenantController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TenantResponse>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(tenantService.getById(id)));
+    }
+
+    @GetMapping("/{id}/staff")
+    public ResponseEntity<ApiResponse<List<com.shreespark.pos_api.staff.dto.response.StaffResponse>>> getTenantStaff(@PathVariable UUID id) {
+        var staffList = staffRepository.findAllByTenantIdAndActiveTrue(id).stream()
+                .map(staffMapper::toResponse)
+                .toList();
+        return ResponseEntity.ok(ApiResponse.ok(staffList));
+    }
+
+    public record ResetStaffPasswordRequest(String newPassword) {}
+
+    @PostMapping("/{id}/staff/{staffId}/reset-password")
+    public ResponseEntity<ApiResponse<String>> resetStaffPassword(
+            @PathVariable UUID id,
+            @PathVariable UUID staffId,
+            @RequestBody ResetStaffPasswordRequest req) {
+        var staff = staffRepository.findByIdAndTenantIdAndActiveTrue(staffId, id)
+                .orElseThrow(() -> new com.shreespark.pos_api.common.exception.ResourceNotFoundException("Staff", staffId));
+        staff.setPassword(passwordEncoder.encode(req.newPassword()));
+        staffRepository.save(staff);
+        return ResponseEntity.ok(ApiResponse.ok("Password reset successfully for " + staff.getName(), null));
+    }
+
+    public record NotifyTenantRequest(String subject, String message) {}
+
+    @PostMapping("/{id}/notify")
+    public ResponseEntity<ApiResponse<String>> notifyTenant(
+            @PathVariable UUID id,
+            @RequestBody NotifyTenantRequest req) {
+        var tenant = tenantRepository.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new com.shreespark.pos_api.common.exception.ResourceNotFoundException("Tenant", id));
+        // Mock notification / Email dispatch log
+        return ResponseEntity.ok(ApiResponse.ok("Notification sent to " + tenant.getEmail(), null));
     }
 
     @PostMapping
