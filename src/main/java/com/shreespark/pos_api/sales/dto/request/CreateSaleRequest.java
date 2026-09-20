@@ -12,6 +12,7 @@ public record CreateSaleRequest(
         UUID customerId,
         @NotNull PaymentMethod paymentMethod,
         @NotEmpty List<SaleItemRequest> items,
+        BigDecimal overallDiscount,
         // for split payment
         BigDecimal cashAmount,
         BigDecimal upiAmount,

@@ -90,6 +90,19 @@ public class SaleServiceImpl implements SaleService {
         BigDecimal totalSgst     = BigDecimal.ZERO;
         BigDecimal totalIgst     = BigDecimal.ZERO;
 
+        // 4a. Intermediate data structure to hold item calculations before final tax apportionment
+        record ItemPrep(
+                SaleItemRequest itemReq,
+                Product product,
+                BigDecimal unitPrice,
+                BigDecimal lineSubtotal,
+                BigDecimal itemDiscountAmt,
+                BigDecimal initialTaxableAmt
+        ) {}
+
+        List<ItemPrep> prepped = new ArrayList<>();
+        BigDecimal totalInitialTaxable = BigDecimal.ZERO;
+
         for (SaleItemRequest itemReq : req.items()) {
             Product product = productRepository.findByIdAndTenantIdAndActiveTrue(itemReq.productId(), tenantId)
                     .orElseThrow(() -> new ResourceNotFoundException("Product", itemReq.productId()));
@@ -106,18 +119,55 @@ public class SaleServiceImpl implements SaleService {
 
             // pick price based on customer type
             BigDecimal unitPrice = resolvePrice(product, customer);
-
-            // apply membership discount
-            BigDecimal discountPct = membershipDiscount;
-            BigDecimal discountAmt = unitPrice
-                    .multiply(BigDecimal.valueOf(itemReq.quantity()))
-                    .multiply(discountPct)
-                    .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-
             BigDecimal lineSubtotal = unitPrice.multiply(BigDecimal.valueOf(itemReq.quantity()));
-            BigDecimal taxableAmt   = lineSubtotal.subtract(discountAmt);
 
-            // Effective GST (Product override -> Category default -> None/0%)
+            // Resolve item discount: priority 1 = explicit item discountAmount, 2 = explicit item discountPercent, 3 = customer membership discount
+            BigDecimal itemDiscountAmt = BigDecimal.ZERO;
+            if (itemReq.discountAmount() != null && itemReq.discountAmount().compareTo(BigDecimal.ZERO) > 0) {
+                itemDiscountAmt = itemReq.discountAmount().min(lineSubtotal);
+            } else if (itemReq.discountPercent() != null && itemReq.discountPercent().compareTo(BigDecimal.ZERO) > 0) {
+                itemDiscountAmt = lineSubtotal.multiply(itemReq.discountPercent()).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+            } else if (membershipDiscount.compareTo(BigDecimal.ZERO) > 0) {
+                itemDiscountAmt = lineSubtotal.multiply(membershipDiscount).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+            }
+
+            BigDecimal initialTaxableAmt = lineSubtotal.subtract(itemDiscountAmt).max(BigDecimal.ZERO);
+            totalInitialTaxable = totalInitialTaxable.add(initialTaxableAmt);
+            prepped.add(new ItemPrep(itemReq, product, unitPrice, lineSubtotal, itemDiscountAmt, initialTaxableAmt));
+        }
+
+        // 4b. Apportion overall bill discount (if any)
+        BigDecimal overallDiscountReq = req.overallDiscount() != null && req.overallDiscount().compareTo(BigDecimal.ZERO) > 0
+                ? req.overallDiscount()
+                : BigDecimal.ZERO;
+
+        BigDecimal allocatedOverallDiscount = BigDecimal.ZERO;
+
+        for (int i = 0; i < prepped.size(); i++) {
+            ItemPrep p = prepped.get(i);
+            BigDecimal overallShare = BigDecimal.ZERO;
+
+            if (overallDiscountReq.compareTo(BigDecimal.ZERO) > 0 && totalInitialTaxable.compareTo(BigDecimal.ZERO) > 0) {
+                if (i == prepped.size() - 1) {
+                    // Last item gets remaining overall discount to handle rounding exactness
+                    overallShare = overallDiscountReq.subtract(allocatedOverallDiscount).max(BigDecimal.ZERO).min(p.initialTaxableAmt());
+                } else {
+                    overallShare = overallDiscountReq.multiply(p.initialTaxableAmt())
+                            .divide(totalInitialTaxable, 2, RoundingMode.HALF_UP)
+                            .min(p.initialTaxableAmt());
+                    allocatedOverallDiscount = allocatedOverallDiscount.add(overallShare);
+                }
+            }
+
+            BigDecimal totalLineDiscount = p.itemDiscountAmt().add(overallShare);
+            BigDecimal discountPct = p.lineSubtotal().compareTo(BigDecimal.ZERO) > 0
+                    ? totalLineDiscount.multiply(new BigDecimal("100")).divide(p.lineSubtotal(), 2, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+
+            BigDecimal taxableAmt = p.lineSubtotal().subtract(totalLineDiscount).max(BigDecimal.ZERO);
+
+            // Effective GST (Product override -> Category default -> None/0%) applied on taxableAmt (post-discount)
+            Product product = p.product();
             GstRate gst = product.getGstRate() != null
                     ? product.getGstRate()
                     : (product.getCategory() != null ? product.getCategory().getGstRate() : null);
@@ -150,10 +200,10 @@ public class SaleServiceImpl implements SaleService {
                     .productId(product.getId())
                     .productName(product.getName())
                     .hsnCode(hsnCode)
-                    .quantity(itemReq.quantity())
-                    .unitPrice(unitPrice)
+                    .quantity(p.itemReq().quantity())
+                    .unitPrice(p.unitPrice())
                     .discountPercent(discountPct)
-                    .discountAmount(discountAmt)
+                    .discountAmount(totalLineDiscount)
                     .taxableAmount(taxableAmt)
                     .cgstPercent(cgstPct).cgstAmount(cgstAmt)
                     .sgstPercent(sgstPct).sgstAmount(sgstAmt)
@@ -163,8 +213,8 @@ public class SaleServiceImpl implements SaleService {
             item.setTenantId(tenantId);
             items.add(item);
 
-            subtotal      = subtotal.add(lineSubtotal);
-            totalDiscount = totalDiscount.add(discountAmt);
+            subtotal      = subtotal.add(p.lineSubtotal());
+            totalDiscount = totalDiscount.add(totalLineDiscount);
             totalCgst     = totalCgst.add(cgstAmt);
             totalSgst     = totalSgst.add(sgstAmt);
             totalIgst     = totalIgst.add(igstAmt);
