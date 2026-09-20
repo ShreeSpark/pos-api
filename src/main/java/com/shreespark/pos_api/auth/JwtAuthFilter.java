@@ -1,6 +1,8 @@
 package com.shreespark.pos_api.auth;
 
 import com.shreespark.pos_api.auth.service.JwtService;
+import com.shreespark.pos_api.common.enums.DeviceStatus;
+import com.shreespark.pos_api.device.repository.DeviceRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,11 +24,26 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final DeviceRepository deviceRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
+        String deviceCode = request.getHeader("X-Device-Code");
+        if (deviceCode != null && !deviceCode.isBlank()) {
+            var devOpt = deviceRepository.findByDeviceCode(deviceCode);
+            if (devOpt.isPresent()) {
+                var dev = devOpt.get();
+                if (dev.getStatus() == DeviceStatus.SUSPENDED || dev.getStatus() == DeviceStatus.TERMINATED) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"success\":false,\"message\":\"Device license is suspended or revoked by vendor. Access denied.\"}");
+                    return;
+                }
+            }
+        }
+
         String header = request.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {
             chain.doFilter(request, response);
