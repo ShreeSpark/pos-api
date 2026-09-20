@@ -27,10 +27,12 @@ public class Device extends BaseEntity {
 
     private String appVersion;
 
+    private String productKey;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private DeviceStatus status = DeviceStatus.ACTIVE;
+    private DeviceStatus status = DeviceStatus.PENDING;
 
     private Instant lastSeenAt;
 

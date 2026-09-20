@@ -11,9 +11,16 @@ public interface DeviceService {
     DeviceResponse heartbeat(UUID tenantId, String deviceCode);
     DeviceResponse approve(UUID tenantId, UUID deviceId);
     DeviceResponse suspend(UUID tenantId, UUID deviceId);
+    DeviceResponse terminate(UUID tenantId, UUID deviceId);
     DeviceResponse activate(UUID tenantId, UUID deviceId);
+    String generateProductKey(UUID tenantId, UUID deviceId);
     void deregister(UUID tenantId, UUID deviceId);
     List<DeviceResponse> getAll(UUID tenantId);
     List<DeviceResponse> getPending(UUID tenantId);
     DeviceResponse getById(UUID tenantId, UUID deviceId);
+
+    // Public standalone endpoints
+    DeviceResponse publicRegister(RegisterDeviceRequest request);
+    DeviceResponse publicHeartbeat(String deviceCode);
+    DeviceResponse verifyKey(String deviceCode, String productKey);
 }

@@ -12,6 +12,7 @@ public record DeviceResponse(
         String deviceName,
         String platform,
         String appVersion,
+        String productKey,
         DeviceStatus status,
         Instant lastSeenAt,
         Instant createdAt

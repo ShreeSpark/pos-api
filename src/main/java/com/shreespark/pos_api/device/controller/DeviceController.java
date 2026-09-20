@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -22,6 +23,26 @@ public class DeviceController {
 
     private final DeviceService deviceService;
     private final JwtService jwtService;
+
+    // Public auto-register for standalone app on first install
+    @PostMapping("/public/register")
+    public ResponseEntity<ApiResponse<DeviceResponse>> publicRegister(@Valid @RequestBody RegisterDeviceRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(deviceService.publicRegister(request)));
+    }
+
+    // Public heartbeat for standalone app
+    @GetMapping("/public/heartbeat/{deviceCode}")
+    public ResponseEntity<ApiResponse<DeviceResponse>> publicHeartbeat(@PathVariable String deviceCode) {
+        return ResponseEntity.ok(ApiResponse.ok(deviceService.publicHeartbeat(deviceCode)));
+    }
+
+    // Public key verification
+    @PostMapping("/public/verify-key")
+    public ResponseEntity<ApiResponse<DeviceResponse>> verifyKey(@RequestBody Map<String, String> body) {
+        String deviceCode = body.get("deviceCode");
+        String productKey = body.get("productKey");
+        return ResponseEntity.ok(ApiResponse.ok(deviceService.verifyKey(deviceCode, productKey)));
+    }
 
     @PostMapping("/register")
     @PreAuthorize("hasAuthority('DEVICE_MANAGE')")

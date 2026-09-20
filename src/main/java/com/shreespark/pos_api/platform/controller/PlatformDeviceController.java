@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -50,5 +51,23 @@ public class PlatformDeviceController {
     public ResponseEntity<ApiResponse<DeviceResponse>> suspend(
             @PathVariable UUID tenantId, @PathVariable UUID deviceId) {
         return ResponseEntity.ok(ApiResponse.ok(deviceService.suspend(tenantId, deviceId)));
+    }
+
+    // Terminate a device platform-wide (Permanent Revocation)
+    @PatchMapping("/{tenantId}/{deviceId}/terminate")
+    public ResponseEntity<ApiResponse<DeviceResponse>> terminate(
+            @PathVariable UUID tenantId, @PathVariable UUID deviceId) {
+        return ResponseEntity.ok(ApiResponse.ok(deviceService.terminate(tenantId, deviceId)));
+    }
+
+    // Generate 25-character activation key for device
+    @PostMapping("/{tenantId}/{deviceId}/generate-key")
+    public ResponseEntity<ApiResponse<Map<String, String>>> generateKey(
+            @PathVariable UUID tenantId, @PathVariable UUID deviceId) {
+        String key = deviceService.generateProductKey(tenantId, deviceId);
+        return ResponseEntity.ok(ApiResponse.ok(Map.of(
+                "productKey", key,
+                "message", "25-character Product Key generated successfully"
+        )));
     }
 }
