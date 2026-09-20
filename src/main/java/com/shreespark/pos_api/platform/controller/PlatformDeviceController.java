@@ -86,4 +86,12 @@ public class PlatformDeviceController {
                 "message", "25-character Product Key generated successfully"
         )));
     }
+
+    // Delete a device platform-wide (Permanent Deletion from DB)
+    @DeleteMapping("/{tenantId}/{deviceId}")
+    public ResponseEntity<ApiResponse<Map<String, String>>> deleteDevice(
+            @PathVariable UUID tenantId, @PathVariable UUID deviceId) {
+        deviceService.deleteDevice(tenantId, deviceId);
+        return ResponseEntity.ok(ApiResponse.ok(Map.of("message", "Device deleted successfully")));
+    }
 }

@@ -19,6 +19,9 @@ public interface DeviceService {
     List<DeviceResponse> getPending(UUID tenantId);
     DeviceResponse getById(UUID tenantId, UUID deviceId);
 
+    // Delete device completely
+    void deleteDevice(UUID tenantId, UUID deviceId);
+
     // Public standalone endpoints
     DeviceResponse publicRegister(RegisterDeviceRequest request);
     DeviceResponse publicHeartbeat(String deviceCode);

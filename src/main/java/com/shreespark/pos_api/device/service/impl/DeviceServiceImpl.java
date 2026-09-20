@@ -144,6 +144,13 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
+    @Transactional
+    public void deleteDevice(UUID tenantId, UUID deviceId) {
+        Device device = findOrThrow(tenantId, deviceId);
+        deviceRepository.delete(device);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<DeviceResponse> getAll(UUID tenantId) {
         return deviceRepository.findAllByTenantIdAndActiveTrue(tenantId)
