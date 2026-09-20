@@ -108,11 +108,28 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     @Transactional
-    public String generateProductKey(UUID tenantId, UUID deviceId) {
+    public String generateProductKey(UUID tenantId, UUID deviceId, Integer validDays, String customExpiryDate) {
         Device device = findOrThrow(tenantId, deviceId);
         String key = generateKeyString();
         device.setProductKey(key);
         device.setStatus(DeviceStatus.ACTIVE);
+
+        if (customExpiryDate != null && !customExpiryDate.isBlank()) {
+            try {
+                if (customExpiryDate.contains("T")) {
+                    device.setExpiresAt(Instant.parse(customExpiryDate));
+                } else {
+                    device.setExpiresAt(java.time.LocalDate.parse(customExpiryDate).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
+                }
+            } catch (Exception e) {
+                device.setExpiresAt(null);
+            }
+        } else if (validDays != null && validDays > 0) {
+            device.setExpiresAt(Instant.now().plus(validDays, java.time.temporal.ChronoUnit.DAYS));
+        } else {
+            device.setExpiresAt(null); // Lifetime key
+        }
+
         deviceRepository.save(device);
         return key;
     }
@@ -178,12 +195,19 @@ public class DeviceServiceImpl implements DeviceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Device", deviceCode));
 
         device.setLastSeenAt(Instant.now());
-        deviceRepository.save(device);
 
-        if (device.getStatus() == DeviceStatus.SUSPENDED || device.getStatus() == DeviceStatus.TERMINATED) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "LICENSE REVOKED / TERMINATED BY VENDOR");
+        if (device.getExpiresAt() != null && Instant.now().isAfter(device.getExpiresAt())) {
+            device.setStatus(DeviceStatus.TERMINATED);
+            deviceRepository.save(device);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "LICENSE EXPIRED. Product Activation Key expired on " + device.getExpiresAt());
         }
 
+        if (device.getStatus() == DeviceStatus.SUSPENDED || device.getStatus() == DeviceStatus.TERMINATED) {
+            deviceRepository.save(device);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "LICENSE REVOKED / TERMINATED BY VENDOR. Status: " + device.getStatus());
+        }
+
+        deviceRepository.save(device);
         return deviceMapper.toResponse(device);
     }
 
@@ -192,6 +216,12 @@ public class DeviceServiceImpl implements DeviceService {
     public DeviceResponse verifyKey(String deviceCode, String productKey) {
         Device device = deviceRepository.findByDeviceCode(deviceCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Device", deviceCode));
+
+        if (device.getExpiresAt() != null && Instant.now().isAfter(device.getExpiresAt())) {
+            device.setStatus(DeviceStatus.TERMINATED);
+            deviceRepository.save(device);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Product Key has expired on " + device.getExpiresAt());
+        }
 
         if (productKey != null) {
             String cleanKey = productKey.trim().toUpperCase();

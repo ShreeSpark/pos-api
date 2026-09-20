@@ -13,7 +13,7 @@ public interface DeviceService {
     DeviceResponse suspend(UUID tenantId, UUID deviceId);
     DeviceResponse terminate(UUID tenantId, UUID deviceId);
     DeviceResponse activate(UUID tenantId, UUID deviceId);
-    String generateProductKey(UUID tenantId, UUID deviceId);
+    String generateProductKey(UUID tenantId, UUID deviceId, Integer validDays, String customExpiryDate);
     void deregister(UUID tenantId, UUID deviceId);
     List<DeviceResponse> getAll(UUID tenantId);
     List<DeviceResponse> getPending(UUID tenantId);

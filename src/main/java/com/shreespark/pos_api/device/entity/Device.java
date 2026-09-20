@@ -29,6 +29,8 @@ public class Device extends BaseEntity {
 
     private String productKey;
 
+    private Instant expiresAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

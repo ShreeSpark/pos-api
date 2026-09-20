@@ -9,7 +9,7 @@ public class DeviceMapper {
     public DeviceResponse toResponse(Device d) {
         return new DeviceResponse(
                 d.getId(), d.getTenantId(), d.getDeviceCode(), d.getDeviceName(),
-                d.getPlatform(), d.getAppVersion(), d.getProductKey(), d.getStatus(),
+                d.getPlatform(), d.getAppVersion(), d.getProductKey(), d.getExpiresAt(), d.getStatus(),
                 d.getLastSeenAt(), d.getCreatedAt()
         );
     }

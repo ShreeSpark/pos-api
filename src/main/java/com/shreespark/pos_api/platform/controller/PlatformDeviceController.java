@@ -60,11 +60,27 @@ public class PlatformDeviceController {
         return ResponseEntity.ok(ApiResponse.ok(deviceService.terminate(tenantId, deviceId)));
     }
 
-    // Generate 25-character activation key for device
+    // Generate 25-character activation key for device (with optional validity days or custom expiry date)
     @PostMapping("/{tenantId}/{deviceId}/generate-key")
     public ResponseEntity<ApiResponse<Map<String, String>>> generateKey(
-            @PathVariable UUID tenantId, @PathVariable UUID deviceId) {
-        String key = deviceService.generateProductKey(tenantId, deviceId);
+            @PathVariable UUID tenantId,
+            @PathVariable UUID deviceId,
+            @RequestBody(required = false) Map<String, Object> body) {
+        Integer validDays = null;
+        String customExpiryDate = null;
+
+        if (body != null) {
+            if (body.get("validDays") != null) {
+                try {
+                    validDays = Integer.parseInt(body.get("validDays").toString());
+                } catch (Exception ignored) {}
+            }
+            if (body.get("customExpiryDate") != null) {
+                customExpiryDate = body.get("customExpiryDate").toString();
+            }
+        }
+
+        String key = deviceService.generateProductKey(tenantId, deviceId, validDays, customExpiryDate);
         return ResponseEntity.ok(ApiResponse.ok(Map.of(
                 "productKey", key,
                 "message", "25-character Product Key generated successfully"
