@@ -193,17 +193,26 @@ public class DeviceServiceImpl implements DeviceService {
         Device device = deviceRepository.findByDeviceCode(deviceCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Device", deviceCode));
 
-        if (productKey != null && productKey.toUpperCase().startsWith("SPARK-")) {
-            device.setProductKey(productKey.toUpperCase());
-            device.setStatus(DeviceStatus.ACTIVE);
-            return deviceMapper.toResponse(deviceRepository.save(device));
+        if (productKey != null) {
+            String cleanKey = productKey.trim().toUpperCase();
+            if (cleanKey.startsWith("SPARK-") || (device.getProductKey() != null && device.getProductKey().equalsIgnoreCase(cleanKey))) {
+                device.setProductKey(cleanKey);
+                device.setStatus(DeviceStatus.ACTIVE);
+                return deviceMapper.toResponse(deviceRepository.save(device));
+            }
         }
 
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Activation Key format");
     }
 
     private Device findOrThrow(UUID tenantId, UUID deviceId) {
-        return deviceRepository.findByIdAndTenantIdAndActiveTrue(deviceId, tenantId)
+        if (tenantId != null && !tenantId.toString().equals("00000000-0000-0000-0000-000000000000")) {
+            var found = deviceRepository.findByIdAndTenantIdAndActiveTrue(deviceId, tenantId);
+            if (found.isPresent()) {
+                return found.get();
+            }
+        }
+        return deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Device", deviceId));
     }
 
